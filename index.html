@@ -283,6 +283,24 @@
     .brand span{display:none}
   }
 </style>
+
+<!-- Google tag (gtag.js) - GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XP9YHLWF5M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XP9YHLWF5M');
+</script>
+
+<!-- Microsoft Clarity -->
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "xe3cm0udcw");
+</script>
 </head>
 <body>
 
@@ -836,6 +854,58 @@
     }
     if(after - before < 100){ devtools.open = false; }
   }, 1000);
+})();
+</script>
+
+<!-- ===== 行銷數據追蹤：自訂事件（CTA 按鈕 + 滾動深度） ===== -->
+<script>
+(function(){
+  function track(name, params){
+    params = params || {};
+    try{ if(typeof gtag === 'function'){ gtag('event', name, params); } }catch(e){}
+    try{ if(typeof clarity === 'function'){ clarity('event', name); } }catch(e){}
+  }
+
+  // --- CTA 按鈕點擊：用事件委派，依連結自動分類 ---
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('a, button');
+    if(!el) return;
+    var href = (el.getAttribute('href') || '').toLowerCase();
+    var text = (el.innerText || el.textContent || '').trim().slice(0, 60);
+    var name = null;
+
+    if(href.indexOf('docs.google.com/forms') > -1)      name = 'click_signup';   // 報名表單
+    else if(href.indexOf('line.me') > -1)               name = 'click_line';     // 加 LINE
+    else if(href.indexOf('youtube.com') > -1 ||
+            href.indexOf('youtu.be') > -1)              name = 'click_youtube';  // YouTube
+    else if(href.indexOf('mind-up.com.tw') > -1)        name = 'click_course';   // 課程內頁
+    else if(el.id === 'menuBtn' ||
+            el.classList.contains('menu-btn') ||
+            href.charAt(0) === '#')                      name = 'click_nav';      // 站內導覽/選單
+
+    if(name){ track(name, { link_text: text, link_url: href }); }
+  }, true);
+
+  // --- 滾動深度：25 / 50 / 75 / 100% 各觸發一次 ---
+  var marks = [25, 50, 75, 100], fired = {};
+  function onScroll(){
+    var doc = document.documentElement, body = document.body;
+    var scrollTop = window.pageYOffset || doc.scrollTop || body.scrollTop || 0;
+    var height = (doc.scrollHeight || body.scrollHeight) - window.innerHeight;
+    if(height <= 0) return;
+    var pct = (scrollTop / height) * 100;
+    for(var i=0;i<marks.length;i++){
+      var m = marks[i];
+      if(pct >= m && !fired[m]){
+        fired[m] = true;
+        track('scroll_depth', { percent: m });
+      }
+    }
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if(!ticking){ window.requestAnimationFrame(function(){ onScroll(); ticking=false; }); ticking=true; }
+  }, { passive: true });
 })();
 </script>
 
